@@ -1,0 +1,105 @@
+{
+  "name": "apeiro",
+  "version": "0.1.0",
+  "description": "Infinite canvas whiteboard for the web: WebGPU/WebGL2 rendering, shapes, connectors, rich text, pen, images and undo, with React bindings and real-time collaboration over Yjs.",
+  "keywords": [
+    "whiteboard",
+    "infinite-canvas",
+    "canvas",
+    "board",
+    "diagram",
+    "webgpu",
+    "webgl",
+    "react",
+    "nextjs",
+    "yjs",
+    "crdt",
+    "collaboration",
+    "socket.io"
+  ],
+  "license": "MIT",
+  "author": "andreyeit",
+  "homepage": "https://github.com/andreyeit/Apeiro#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andreyeit/Apeiro.git",
+    "directory": "packages/engine"
+  },
+  "bugs": {
+    "url": "https://github.com/andreyeit/Apeiro/issues"
+  },
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./yjs": {
+      "types": "./dist/yjs.d.ts",
+      "default": "./dist/yjs.js"
+    },
+    "./yjs/react": {
+      "types": "./dist/yjs-react.d.ts",
+      "default": "./dist/yjs-react.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json",
+    "check:package": "node scripts/check-package.mjs",
+    "prepublishOnly": "pnpm run build && pnpm run check:package"
+  },
+  "dependencies": {
+    "@mapbox/tiny-sdf": "^2.3.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0 || ^19.0.0",
+    "yjs": "^13.6.0",
+    "y-protocols": "^1.0.6"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "yjs": {
+      "optional": true
+    },
+    "y-protocols": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@apeiro/core": "workspace:*",
+    "@apeiro/editor": "workspace:*",
+    "@apeiro/react": "workspace:*",
+    "@apeiro/renderer": "workspace:*",
+    "@apeiro/yjs": "workspace:*",
+    "@types/react": "^19.3.0",
+    "react": "^19.3.1",
+    "tsdown": "^0.23.7",
+    "yjs": "^13.6.33",
+    "y-protocols": "^1.0.7"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

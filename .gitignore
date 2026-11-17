@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+
+# npm pack output
+*.tgz
+.DS_Store
+
+shell.nix
+
+# Copied from the root README by the build (npm shows the package's own)
+packages/engine/README.md
