@@ -1,6 +1,7 @@
 import {
-  DEFAULT_FONT,
   LINE_HEIGHT,
+  fontFamily,
+  fontIndex,
   LIST_GAP_EM,
   MIXED,
   applyStyle,
@@ -39,7 +40,7 @@ import {
   type TextStyle,
 } from '@apeiro/core';
 import type { BoardRenderer } from '@apeiro/renderer';
-import { familyFor, offsetOf, parse, positionOf, render, toCss } from './dom';
+import { offsetOf, parse, positionOf, render, toCss } from './dom';
 import { TextToolbar } from './toolbar';
 import { EN_LABELS, type BoardLabels } from '../ui/labels';
 
@@ -186,7 +187,7 @@ export class TextEditor {
     this.input.spellcheck = false;
     this.root.append(this.input);
     this.root.hidden = true;
-    this.bar = new TextToolbar(labels, this.baseFamilySafe(), {
+    this.bar = new TextToolbar(labels, {
       setFont: (id) => this.setFont(id),
       stepSize: (dir) => this.stepSize(dir),
       setFontSize: (size) => this.setFontSize(size),
@@ -258,10 +259,6 @@ export class TextEditor {
     this.toolbar.remove();
   }
 
-  private get baseFamily(): string {
-    return this.renderer.measurer.family;
-  }
-
   /**
    * The edited element's text changed from elsewhere (another view, later another user):
    * show that instead of overwriting it with the next keystroke.
@@ -276,7 +273,7 @@ export class TextEditor {
     this.block = el.text;
     this.undoStack = [];
     this.redoStack = [];
-    render(this.input, this.block, this.baseFamily, this.labels.openLinkHint);
+    render(this.input, this.block, this.labels.openLinkHint);
     const length = runsLength(this.block.runs);
     this.select(Math.min(map(from), length), Math.min(map(to), length));
     this.syncToolbar();
@@ -322,7 +319,7 @@ export class TextEditor {
     this.redoStack = [];
     this.lastTypingAt = 0;
     this.closeLinkBar();
-    render(this.input, this.block, this.baseFamily, this.labels.openLinkHint);
+    render(this.input, this.block, this.labels.openLinkHint);
     this.setComposing(false);
     this.root.hidden = false;
     this.toolbar.hidden = false;
@@ -382,7 +379,7 @@ export class TextEditor {
     s.padding = `${area.minY}px ${el.w - area.maxX}px ${el.h - area.maxY}px ${area.minX}px`;
     s.justifyContent = JUSTIFY[this.block.verticalAlign];
     const i = this.input.style;
-    i.fontFamily = familyFor(this.block.font, this.baseFamily);
+    i.fontFamily = fontFamily(this.block.font).css;
     i.fontSize = `${this.block.fontSize * k}px`;
     i.setProperty('--k', String(k));
     i.setProperty('--gap', `${LIST_GAP_EM * this.block.fontSize * k}px`);
@@ -414,11 +411,6 @@ export class TextEditor {
       const y = top.y - 12 - th >= margin ? top.y - 12 - th : bottom + 12;
       this.toolbar.style.transform = `translate(${x}px, ${y}px)`;
     }
-  }
-
-  /** The renderer's family, tolerating test doubles without a measurer. */
-  private baseFamilySafe(): string {
-    return (this.renderer as Partial<BoardRenderer>).measurer?.family ?? '';
   }
 
   private onKeyDown(e: KeyboardEvent): void {
@@ -693,10 +685,10 @@ export class TextEditor {
       const runs =
         len > 0 ? applyStyle(this.block.runs, 0, len, { font: undefined }) : this.block.runs;
       const block: TextBlock = { ...this.block, runs, font: id };
-      if (id === DEFAULT_FONT) delete block.font;
+      if (fontIndex(id) === 0) delete block.font;
       this.write(block, from, to);
     } else {
-      const value = id === (this.block.font ?? DEFAULT_FONT) ? undefined : id;
+      const value = fontIndex(id) === fontIndex(this.block.font) ? undefined : id;
       this.write(
         { ...this.block, runs: applyStyle(this.block.runs, from, to, { font: value }) },
         from,
@@ -819,7 +811,7 @@ export class TextEditor {
     if (!el || !isShape(el)) return;
     if (history !== 'none') this.record(history);
     this.block = block;
-    render(this.input, block, this.baseFamily, this.labels.openLinkHint);
+    render(this.input, block, this.labels.openLinkHint);
     this.select(selFrom, selTo);
     this.lastSelection = [selFrom, selTo];
     this.scene.update(this.id, {

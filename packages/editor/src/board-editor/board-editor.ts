@@ -93,8 +93,6 @@ export interface BoardEditorOptions {
   backend?: 'auto' | 'webgpu' | 'webgl';
   /** Grid of the board: dots, lines (default) or none. */
   grid?: GridStyle | 'none';
-  /** CSS font-family of board text (default: Inter, then the system UI font). Load the font yourself. */
-  fontFamily?: string;
   /** Smart guides while moving and resizing (default true). */
   snapping?: boolean;
   /** Animated zoom and pan (default true). */
@@ -941,7 +939,6 @@ export class BoardEditor {
           options.background === 'transparent' ? 0 : (options.background ?? colors.background),
         gridColor: options.grid && grid !== 'none' ? colors.gridColor : 0,
         gridStyle: grid === 'none' ? 'dots' : grid,
-        ...(this.options.fontFamily ? { fontFamily: this.options.fontFamily } : {}),
         ...(this.options.mediaOrigins ? { mediaOrigins: this.options.mediaOrigins } : {}),
         colorTheme: dark ? DARK_BOARD_COLORS : [],
         keepTypes: THEME_KEEP_TYPES,
@@ -1032,7 +1029,6 @@ export class BoardEditor {
       transparent: true,
       background: 0,
       gridColor: 0,
-      ...(this.options.fontFamily ? { fontFamily: this.options.fontFamily } : {}),
       ...(this.options.mediaOrigins
         ? { media: { allowedOrigins: this.options.mediaOrigins } }
         : {}),
@@ -1097,7 +1093,6 @@ export class BoardEditor {
         gridStyle: grid === 'none' ? 'dots' : grid,
         background: colors.background,
         gridColor: grid === 'none' ? 0 : colors.gridColor,
-        ...(this.options.fontFamily ? { fontFamily: this.options.fontFamily } : {}),
         ...(this.options.mediaOrigins
           ? { media: { allowedOrigins: this.options.mediaOrigins } }
           : {}),

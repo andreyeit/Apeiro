@@ -9,7 +9,7 @@
  */
 export * from '@apeiro/core';
 export * from '@apeiro/editor';
-export { BoardRenderer, createRenderer, DEFAULT_FONT_FAMILY } from '@apeiro/renderer';
+export { BoardRenderer, createRenderer } from '@apeiro/renderer';
 export type {
   AudioWidgetStyle,
   BackendKind,

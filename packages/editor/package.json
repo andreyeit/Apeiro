@@ -14,7 +14,5 @@
     "@apeiro/core": "workspace:*",
     "@apeiro/renderer": "workspace:*"
   },
-  "devDependencies": {
-    "happy-dom": "^21.0.4"
-  }
+  "devDependencies": {}
 }

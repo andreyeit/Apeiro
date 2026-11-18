@@ -1,6 +1,6 @@
 import {
   commonStyle,
-  DEFAULT_FONT,
+  fontFamily,
   FONT_FAMILIES,
   hasStyle,
   linkAt,
@@ -14,7 +14,7 @@ import {
   type TextStyle,
 } from '@apeiro/core';
 import type { BoardLabels } from '../ui/labels';
-import { familyFor, toCss } from './dom';
+import { toCss } from './dom';
 
 /** Text colors offered by the toolbar. */
 const COLORS = [0x1f2937ff, 0xdc2626ff, 0xea580cff, 0x16a34aff, 0x2563ebff, 0x7c3aedff];
@@ -51,7 +51,7 @@ export class TextToolbar {
   private readonly listButtons = new Map<ListKind, HTMLButtonElement>();
   private readonly linkButton: HTMLButtonElement;
 
-  constructor(labels: BoardLabels, baseFamily: string, actions: ToolbarActions) {
+  constructor(labels: BoardLabels, actions: ToolbarActions) {
     this.el.className = 'ap-text-toolbar';
     this.el.hidden = true;
     const row = document.createElement('div');
@@ -74,7 +74,7 @@ export class TextToolbar {
       const o = document.createElement('option');
       o.value = f.id;
       o.textContent = f.label;
-      o.style.fontFamily = familyFor(f.id, baseFamily);
+      o.style.fontFamily = f.css;
       this.fontSelect.append(o);
     }
     this.fontSelect.addEventListener('change', () => actions.setFont(this.fontSelect.value));
@@ -206,7 +206,7 @@ export class TextToolbar {
     this.linkButton.classList.toggle('active', !!link || typeof rangeLink === 'string');
     if (document.activeElement !== this.fontSelect) {
       const font = commonStyle(block.runs, from, to, 'font');
-      this.fontSelect.value = font === MIXED ? '' : (font ?? block.font ?? DEFAULT_FONT);
+      this.fontSelect.value = font === MIXED ? '' : fontFamily(font ?? block.font).id;
     }
   }
 }

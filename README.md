@@ -87,7 +87,6 @@ Settings (`<Board>` or `<BoardProvider>`):
 | `grid`            | `'lines'`       | `'lines'`, `'dots'`, `'none'`     |
 | `labels`          | English         | UI texts, e.g. `RU_LABELS`        |
 | `upload`          | object URLs     | `(file) => Promise<url>`          |
-| `fontFamily`      | Inter           | Font of board text                |
 
 ## Commands
 
@@ -193,3 +192,10 @@ are `0xRRGGBBAA` (`hexColor('#ff0000')`).
 
 CSS custom properties on `.ap-board`: `--ap-accent`, `--ap-surface`, `--ap-foreground`,
 `--ap-border`, `--ap-muted`, `--ap-font`, `--ap-radius-sm`, `--ap-radius-md`, `--ap-shadow`.
+
+## Fonts
+
+Board text can use Geist (the default), Inter, PT Serif, JetBrains Mono and Caveat
+(`FONT_FAMILIES`); the text toolbar offers all of them. Load the font files yourself
+(`@font-face`, e.g. from Google Fonts), otherwise the system fallbacks are drawn.
+`--ap-font` is the font of the board's own UI, not of its text.

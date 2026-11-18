@@ -1,6 +1,5 @@
 import {
   fontFamily,
-  fontIndex,
   listMarkers,
   normalizeParagraphs,
   normalizeRuns,
@@ -29,10 +28,6 @@ import {
 export const toCss = (rgba: number) =>
   `rgba(${rgba >>> 24}, ${(rgba >>> 16) & 255}, ${(rgba >>> 8) & 255}, ${(rgba & 255) / 255})`;
 
-/** CSS family of a font id; the default font uses `base` (the renderer's configured family). */
-export const familyFor = (id: string | undefined, base: string): string =>
-  fontIndex(id) === 0 ? base : fontFamily(id).css;
-
 const scaled = (px: number) => `calc(var(--k, 1) * ${px}px)`;
 
 /** Splits runs at line breaks: the runs of each paragraph. */
@@ -51,7 +46,6 @@ function splitParagraphs(runs: readonly TextRun[]): TextRun[][] {
 export function render(
   root: HTMLElement,
   block: TextBlock,
-  baseFamily: string,
   openLinkHint = 'Ctrl+click to open',
 ): void {
   root.replaceChildren();
@@ -69,7 +63,7 @@ export function render(
       div.style.paddingLeft = scaled(indent);
       div.style.setProperty('--mw', scaled(indent));
     }
-    for (const run of runs) div.append(span(run, baseFamily, openLinkHint));
+    for (const run of runs) div.append(span(run, openLinkHint));
     if (runs.length === 0) {
       const br = document.createElement('br');
       br.dataset.sentinel = '1';
@@ -79,7 +73,7 @@ export function render(
   });
 }
 
-function span(run: TextRun, baseFamily: string, openLinkHint: string): HTMLSpanElement {
+function span(run: TextRun, openLinkHint: string): HTMLSpanElement {
   const s = document.createElement('span');
   const d = s.dataset;
   if (run.bold) d.b = '1';
@@ -96,7 +90,7 @@ function span(run: TextRun, baseFamily: string, openLinkHint: string): HTMLSpanE
   }
   if (run.font !== undefined) {
     d.font = run.font;
-    s.style.fontFamily = familyFor(run.font, baseFamily);
+    s.style.fontFamily = fontFamily(run.font).css;
   }
   if (run.link !== undefined) {
     d.href = run.link;

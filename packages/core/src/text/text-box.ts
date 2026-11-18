@@ -175,7 +175,7 @@ export function stepTextSize(block: TextBlock, dir: 1 | -1, scale = 1): TextBloc
   return { ...block, fontSize: next, runs };
 }
 
-/** The whole text in one font family (`DEFAULT_FONT` is stored as no `font`). */
+/** The whole text in one font family (the default one is stored as no `font`). */
 export function withFont(block: TextBlock, id: string): TextBlock {
   const runs = block.runs.some((r) => r.font !== undefined)
     ? block.runs.map(({ font: _drop, ...r }) => r)

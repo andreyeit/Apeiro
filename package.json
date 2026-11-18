@@ -5,8 +5,6 @@
   "packageManager": "pnpm@12.9.0",
   "scripts": {
     "build": "pnpm -r build",
-    "test": "vitest run",
-    "test:watch": "vitest",
     "bench:scene": "vitest bench --run packages/core/src/scene/scene.bench.ts",
     "typecheck": "pnpm -r typecheck",
     "lint": "oxlint --max-warnings 0 .",

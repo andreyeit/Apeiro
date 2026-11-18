@@ -28,7 +28,7 @@ export type BoardTheme = BoardThemeName | 'system';
  * a `<Board>` without a provider.
  *
  * `theme`, `readOnly` and the callbacks can change at any time. The other options
- * (`initialElements`, `grid`, `backend`, `fontFamily`…) are read once, when the board is
+ * (`initialElements`, `grid`, `backend`…) are read once, when the board is
  * created; changing one later logs a warning (give the component a new `key` to start over).
  */
 export interface BoardSettings extends Omit<BoardOptions, 'onError' | 'theme' | 'readOnly'> {

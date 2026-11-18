@@ -20,7 +20,6 @@ import {
   createColorRasterizer,
   createSdfRasterizer,
   cssFont,
-  DEFAULT_FONT_FAMILY,
   SDF_CUTOFF,
 } from './text/font';
 import { createWebGlBackend } from './webgl/gl-backend';
@@ -67,8 +66,6 @@ export interface RendererOptions {
    * call). Only WebGL has this, so `createRenderer` picks WebGL for it unless told otherwise.
    */
   preserveDrawingBuffer?: boolean;
-  /** CSS font-family for board text. Must match the DOM text editor. */
-  fontFamily?: string;
   text?: TextLayerOptions;
   /** Which media URLs may be loaded (by default: blob:, data:, the page's own origin). */
   media?: MediaPassOptions;
@@ -140,7 +137,6 @@ export class BoardRenderer {
   private gridColor: [number, number, number, number];
   private gridStyle: GridStyle;
   private readonly maxPixelRatio: number;
-  private readonly fontFamily: string;
   private dpr = 1;
   private readonly size: CanvasSize;
   private readonly fixedPixelRatio: number | null;
@@ -176,14 +172,12 @@ export class BoardRenderer {
     this.gridStyle = options.gridStyle ?? 'dots';
     this.maxPixelRatio = options.maxPixelRatio ?? MAX_PIXEL_RATIO;
     this.fixedPixelRatio = options.pixelRatio ?? null;
-    const family = options.fontFamily ?? DEFAULT_FONT_FAMILY;
-    this.fontFamily = family;
-    this.measurer = new CanvasFontMeasurer(family);
+    this.measurer = new CanvasFontMeasurer();
     this.textLayer = new TextLayer(
       this.sdfAtlas,
       this.colorAtlas,
       this.measurer,
-      { sdf: createSdfRasterizer(family), color: createColorRasterizer(family) },
+      { sdf: createSdfRasterizer(), color: createColorRasterizer() },
       options.text,
     );
 
@@ -218,19 +212,12 @@ export class BoardRenderer {
     // Web fonts load asynchronously: glyphs and metrics cached before that belong to the
     // fallback. Each face loads separately and other fonts on the page fire the same
     // event, so glyphs are only dropped when one of the board's faces became available.
-    const fonts = typeof document !== 'undefined' ? document.fonts : undefined;
-    if (fonts) {
+    const fontSet = typeof document !== 'undefined' ? document.fonts : undefined;
+    if (fontSet) {
       this.fontSignature = this.loadedFaces();
-      // Faces finish one by one (and the event fires for every font on the page): the
-      // check and the reset happen once, in the next frame, however many arrived meanwhile.
-      const onFonts = () => {
-        this.fontsChanged = true;
-        this.requestRender();
-      };
-      fonts.addEventListener('loadingdone', onFonts);
-      // Canvas measuring doesn't make the browser fetch a web font: ask for every face.
-      for (const face of this.faces()) fonts.load(face, FACE_SAMPLE).then(onFonts, () => undefined);
-      this.disposers.push(() => fonts.removeEventListener('loadingdone', onFonts));
+      fontSet.addEventListener('loadingdone', this.onFontsLoaded);
+      this.disposers.push(() => fontSet.removeEventListener('loadingdone', this.onFontsLoaded));
+      this.loadFaces();
     }
     this.size = new CanvasSize(this.canvas, () => this.resize());
     this.disposers.push(() => this.size.dispose());
@@ -460,10 +447,28 @@ export class BoardRenderer {
     return items.sort((a, b) => b.depth - a.depth);
   }
 
+  /**
+   * A font finished loading, maybe one of the board's faces. Faces finish one by one (and
+   * the event fires for every font on the page): the check and the reset happen once, in
+   * the next frame, however many arrived meanwhile.
+   */
+  private readonly onFontsLoaded = () => {
+    this.fontsChanged = true;
+    this.requestRender();
+  };
+
+  /** Canvas measuring doesn't make the browser fetch a web font: asks for every face. */
+  private loadFaces(): void {
+    const fontSet = typeof document !== 'undefined' ? document.fonts : undefined;
+    if (!fontSet) return;
+    for (const face of this.faces())
+      fontSet.load(face, FACE_SAMPLE).then(this.onFontsLoaded, () => undefined);
+  }
+
   /** Every face text can use: each family of `FONT_FAMILIES` in regular/bold/italic. */
   private faces(): string[] {
     const out: string[] = [];
-    for (let v = 0; v < FONT_FAMILIES.length * 4; v++) out.push(cssFont(v, 16, this.fontFamily));
+    for (let v = 0; v < FONT_FAMILIES.length * 4; v++) out.push(cssFont(v, 16));
     return out;
   }
 

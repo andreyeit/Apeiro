@@ -14,7 +14,6 @@ export { GlyphAtlas, type GlyphInfo, type RasterGlyph } from './text/glyph-atlas
 export { TextLayer, type TextLayerOptions } from './layers/text-layer';
 export {
   CanvasFontMeasurer,
-  DEFAULT_FONT_FAMILY,
   cssFont,
   createColorRasterizer,
   createSdfRasterizer,

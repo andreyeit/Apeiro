@@ -192,10 +192,6 @@ importers:
       '@apeiro/renderer':
         specifier: workspace:*
         version: link:../renderer
-    devDependencies:
-      happy-dom:
-        specifier: ^21.0.4
-        version: 21.0.4
 
   packages/engine:
     dependencies:
@@ -252,9 +248,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
-      happy-dom:
-        specifier: ^21.0.4
-        version: 21.0.4
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -1889,6 +1882,7 @@ snapshots:
   '@types/node@26.6.6':
     dependencies:
       undici-types: 8.9.0
+    optional: true
 
   '@types/react-dom@19.3.0(@types/react@19.3.0)':
     dependencies:
@@ -1898,11 +1892,13 @@ snapshots:
     dependencies:
       csstype: 3.2.3
 
-  '@types/whatwg-mimetype@3.0.2': {}
+  '@types/whatwg-mimetype@3.0.2':
+    optional: true
 
   '@types/ws@8.18.2':
     dependencies:
       '@types/node': 26.6.6
+    optional: true
 
   '@vitest/mocker@5.1.0(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))':
     dependencies:
@@ -1938,6 +1934,7 @@ snapshots:
   buffer-image-size@0.6.4:
     dependencies:
       '@types/node': 26.6.6
+    optional: true
 
   cac@7.1.0: {}
 
@@ -1953,7 +1950,8 @@ snapshots:
 
   empathic@2.1.0: {}
 
-  entities@7.0.1: {}
+  entities@7.0.1:
+    optional: true
 
   es-module-lexer@2.3.2: {}
 
@@ -2016,6 +2014,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
   hookable@6.1.2: {}
 
@@ -2275,7 +2274,8 @@ snapshots:
       '@quansync/fs': 1.1.0
       quansync: 1.0.0
 
-  undici-types@8.9.0: {}
+  undici-types@8.9.0:
+    optional: true
 
   verkit@0.5.0: {}
 
@@ -2315,11 +2315,13 @@ snapshots:
     transitivePeerDependencies:
       - msw
 
-  whatwg-mimetype@3.0.0: {}
+  whatwg-mimetype@3.0.0:
+    optional: true
 
   why-is-node-running@3.2.1: {}
 
-  ws@8.22.1: {}
+  ws@8.22.1:
+    optional: true
 
   y-protocols@1.0.7(yjs@13.6.33):
     dependencies:

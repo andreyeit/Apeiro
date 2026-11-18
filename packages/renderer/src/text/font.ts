@@ -2,17 +2,9 @@ import TinySDF from '@mapbox/tiny-sdf';
 import { FONT_FAMILIES, variantFamily, type FontMeasurer, type FontVariant } from '@apeiro/core';
 import type { RasterGlyph } from './glyph-atlas';
 
-/** CSS family of the default font (`FONT_FAMILIES[0]`); renderers may override it. */
-export const DEFAULT_FONT_FAMILY = FONT_FAMILIES[0]!.css;
-
-/**
- * CSS family of a variant: its family from `FONT_FAMILIES`, with `base` standing in for
- * the default one (index 0), so a renderer configured with another default font uses it.
- */
-export function familyCss(variant: FontVariant, base: string = DEFAULT_FONT_FAMILY): string {
-  const i = variantFamily(variant);
-  return i === 0 ? base : (FONT_FAMILIES[i]?.css ?? base);
-}
+/** CSS family of a variant (the default one for an unknown index). */
+export const familyCss = (variant: FontVariant): string =>
+  (FONT_FAMILIES[variantFamily(variant)] ?? FONT_FAMILIES[0]!).css;
 
 const MEASURE_SIZE = 100;
 
@@ -21,10 +13,10 @@ export const variantCss = (variant: FontVariant) => ({
   style: variant & 2 ? 'italic' : 'normal',
 });
 
-/** CSS `font` shorthand of a variant; `family` is the default family's CSS. */
-export function cssFont(variant: FontVariant, size: number, family: string): string {
+/** CSS `font` shorthand of a variant. */
+export function cssFont(variant: FontVariant, size: number): string {
   const { weight, style } = variantCss(variant);
-  return `${style} ${weight} ${size}px ${familyCss(variant, family)}`;
+  return `${style} ${weight} ${size}px ${familyCss(variant)}`;
 }
 
 type Ctx2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
@@ -53,7 +45,7 @@ export class CanvasFontMeasurer implements FontMeasurer {
   private vertical = new Map<number, { ascent: number; descent: number }>();
   private currentVariant: FontVariant | -1 = -1;
 
-  constructor(readonly family: string = DEFAULT_FONT_FAMILY) {
+  constructor() {
     this.updateVerticalMetrics();
   }
 
@@ -87,7 +79,7 @@ export class CanvasFontMeasurer implements FontMeasurer {
     const family = variantFamily(variant);
     let m = this.vertical.get(family);
     if (!m) {
-      this.ctx.font = cssFont(family * 4, MEASURE_SIZE, this.family);
+      this.ctx.font = cssFont(family * 4, MEASURE_SIZE);
       this.currentVariant = family * 4;
       const t = this.ctx.measureText('Hg');
       m = t.fontBoundingBoxAscent
@@ -112,14 +104,14 @@ export class CanvasFontMeasurer implements FontMeasurer {
 
   private measure(text: string, variant: FontVariant): number {
     if (this.currentVariant !== variant) {
-      this.ctx.font = cssFont(variant, MEASURE_SIZE, this.family);
+      this.ctx.font = cssFont(variant, MEASURE_SIZE);
       this.currentVariant = variant;
     }
     return this.ctx.measureText(text).width / MEASURE_SIZE;
   }
 
   private updateVerticalMetrics(): void {
-    this.ctx.font = cssFont(0, MEASURE_SIZE, this.family);
+    this.ctx.font = cssFont(0, MEASURE_SIZE);
     const m = this.ctx.measureText('Hg');
     if (m.fontBoundingBoxAscent) {
       this.ascent = m.fontBoundingBoxAscent / MEASURE_SIZE;
@@ -140,7 +132,7 @@ const sdfBuffer = (size: number) => Math.ceil(size / 8);
  * Single-channel SDF glyphs at any raster size. The distance range scales with the
  * size, so every tier antialiases identically in the shader.
  */
-export function createSdfRasterizer(family: string = DEFAULT_FONT_FAMILY): GlyphRasterizer {
+export function createSdfRasterizer(): GlyphRasterizer {
   const instances = new Map<string, TinySDF>();
   return (cluster, variant, size) => {
     const key = `${variant}:${size}`;
@@ -152,7 +144,7 @@ export function createSdfRasterizer(family: string = DEFAULT_FONT_FAMILY): Glyph
         buffer: sdfBuffer(size),
         radius: size / 4,
         cutoff: SDF_CUTOFF,
-        fontFamily: familyCss(variant, family),
+        fontFamily: familyCss(variant),
         fontWeight: weight,
         fontStyle: style,
       });
@@ -170,12 +162,12 @@ export function createSdfRasterizer(family: string = DEFAULT_FONT_FAMILY): Glyph
 }
 
 /** RGBA bitmaps (premultiplied) for color glyphs: emoji, flags. */
-export function createColorRasterizer(family: string = DEFAULT_FONT_FAMILY): GlyphRasterizer {
+export function createColorRasterizer(): GlyphRasterizer {
   let ctx: Ctx2D | null = null;
   return (cluster, variant, size) => {
     const pad = 2;
     ctx ??= createContext(8, 8);
-    ctx.font = cssFont(variant, size, family);
+    ctx.font = cssFont(variant, size);
     const m = ctx.measureText(cluster);
     // Real glyphs extend a couple of em at most; anything beyond (stacked combining marks…)
     // is clipped, so a single cluster can't allocate a huge bitmap or overflow the atlas.
@@ -193,7 +185,7 @@ export function createColorRasterizer(family: string = DEFAULT_FONT_FAMILY): Gly
     if (canvas.width < width || canvas.height < height) {
       canvas.width = Math.max(canvas.width, width);
       canvas.height = Math.max(canvas.height, height);
-      ctx.font = cssFont(variant, size, family); // resizing resets the context state
+      ctx.font = cssFont(variant, size); // resizing resets the context state
     }
     ctx.clearRect(0, 0, width, height);
     ctx.textBaseline = 'alphabetic';

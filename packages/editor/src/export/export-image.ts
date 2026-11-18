@@ -74,7 +74,6 @@ export interface ExportLook {
   background: number;
   gridColor: number;
   gridStyle: GridStyle;
-  fontFamily?: string;
   mediaOrigins?: readonly string[];
   colorTheme: ReadonlyArray<readonly [number, number]>;
   keepTypes: Iterable<string>;
@@ -127,7 +126,6 @@ export async function renderImage(
       background: look.background,
       gridColor: look.gridColor,
       gridStyle: look.gridStyle,
-      ...(look.fontFamily ? { fontFamily: look.fontFamily } : {}),
       ...(look.mediaOrigins ? { media: { allowedOrigins: look.mediaOrigins } } : {}),
     });
     try {
