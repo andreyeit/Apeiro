@@ -1,3 +1,5 @@
+import type { BoardRole } from '@apeiro/editor';
+
 /**
  * The board sync protocol over Socket.IO: what `SocketSync` sends and expects. The server
  * side is yours (any framework); this file is its contract. All binary payloads are Yjs
@@ -43,9 +45,6 @@ export type BoardEvents = { [K in keyof typeof BOARD_EVENTS]: string };
 /** Yjs bytes as socket.io delivers them. */
 export type Bytes = Uint8Array | ArrayBuffer;
 
-/** What the user may do on the board: edit it, or only look. */
-export type BoardRole = 'edit' | 'view';
-
 /** The answer to `board:join`. */
 export type BoardJoinReply =
   | {
@@ -70,8 +69,8 @@ export type BoardUpdateReply = { ok: true } | { error: string };
 /** The part of a socket.io client socket the sync uses: a socket.io `Socket` fits as is. */
 export interface BoardSocket {
   readonly connected: boolean;
-  on(event: string, listener: (...args: never[]) => void): unknown;
-  off(event: string, listener: (...args: never[]) => void): unknown;
+  on(event: string, listener: (...args: unknown[]) => void): unknown;
+  off(event: string, listener: (...args: unknown[]) => void): unknown;
   emit(event: string, ...args: unknown[]): unknown;
   timeout(ms: number): { emitWithAck(event: string, ...args: unknown[]): Promise<unknown> };
   /** socket.io's volatile flag: cursor updates go this way when there is one. */

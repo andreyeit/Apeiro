@@ -16,8 +16,8 @@ export interface BoardChanges {
   removed: string[];
   /**
    * Where the changes come from: `undefined` for this user's edits, `'history'` for undo
-   * and redo, `'load'` for `editor.load()`, `'yjs'` for changes received through
-   * `collaborate`, or the tag you passed to `scene.transact(fn, tag)` (e.g. `'remote'` when
+   * and redo, `'load'` for `editor.load()`, `'yjs'` for changes received from a
+   * `sync`, or the tag you passed to `scene.transact(fn, tag)` (e.g. `'remote'` when
    * applying changes from your own server: don't send those back).
    */
   origin: string | undefined;

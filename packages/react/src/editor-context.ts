@@ -1,5 +1,5 @@
 import type { BoardElement } from '@apeiro/core';
-import { BoardEditor, type BoardEditorOptions } from '@apeiro/editor';
+import { BoardEditor, type BoardEditorOptions, type BoardSync } from '@apeiro/editor';
 import {
   createContext,
   useContext,
@@ -9,9 +9,11 @@ import {
   useSyncExternalStore,
 } from 'react';
 
-/** What `<BoardProvider>` hands down: its editor, and where errors of the board go. */
+/** What `<BoardProvider>` hands down: its editor, its sync, and where errors of the board go. */
 export interface BoardContextValue {
   editor: BoardEditor;
+  /** The provider's `sync`, if the board is shared. */
+  sync: BoardSync | null;
   /** The provider's `onError`, or the console. */
   reportError: (error: unknown) => void;
 }
@@ -23,7 +25,8 @@ export interface BoardOptions extends BoardEditorOptions {
   /**
    * What the new board shows at first (plain element data, e.g. loaded from your storage).
    * Not an undo step. Read once, when the editor is created, like the other options.
-   * Don't use it with `collaborate`: the shared document decides the content there.
+   * With `sync` the shared board decides the content: these are only sent when it is
+   * empty (a template for a new board).
    */
   initialElements?: readonly BoardElement[];
 }

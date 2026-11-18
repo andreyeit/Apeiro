@@ -1,5 +1,5 @@
 import type { BoardElement } from '@apeiro/core';
-import type { BoardEditor, BoardThemeName } from '@apeiro/editor';
+import type { BoardEditor, BoardSync, BoardThemeName } from '@apeiro/editor';
 import {
   useCallback,
   useContext,
@@ -27,7 +27,7 @@ export type BoardTheme = BoardThemeName | 'system';
  * What a board is: its content, settings and callbacks. Given to `<BoardProvider>`, or to
  * a `<Board>` without a provider.
  *
- * `theme`, `readOnly` and the callbacks can change at any time. The other options
+ * `theme`, `readOnly`, `sync` and the callbacks can change at any time. The other options
  * (`initialElements`, `grid`, `backend`…) are read once, when the board is
  * created; changing one later logs a warning (give the component a new `key` to start over).
  */
@@ -44,6 +44,12 @@ export interface BoardSettings extends Omit<BoardOptions, 'onError' | 'theme' | 
    * network…) in separate calls. Not called for `initialElements`.
    */
   onChange?: (elements: BoardElement[], changes: BoardChanges) => void;
+  /**
+   * Shares the board with others: a sync made by `createSync` (`apeiro/sync`). Shown while
+   * the board is mounted; destroying it is up to you. Can change at any time (another
+   * board of the same editor), and read with `useSyncState()`.
+   */
+  sync?: BoardSync | null;
   /** The renderer couldn't start (no WebGPU or WebGL2), or a file could not be added. */
   onError?: (error: unknown) => void;
 }
@@ -104,9 +110,20 @@ function useResolvedTheme(theme: BoardTheme | undefined): BoardThemeName | undef
 }
 
 /** Settings the provider applies itself when they change (not reported as ignored). */
-const LIVE_SETTINGS: ReadonlySet<string> = new Set(['theme', 'readOnly']);
+const LIVE_SETTINGS: ReadonlySet<string> = new Set(['theme', 'readOnly', 'sync']);
 
 const consoleError = (error: unknown) => console.error('apeiro:', error);
+
+const noSync = () => () => undefined;
+
+/** Whether `sync` keeps the board read-only now. */
+function useSyncReadOnly(sync: BoardSync | null): boolean {
+  return useSyncExternalStore(
+    useCallback((onChange: () => void) => (sync ? sync.subscribe(onChange) : noSync()), [sync]),
+    () => !!sync?.getState().readOnly,
+    () => !!sync?.getState().readOnly,
+  );
+}
 
 /**
  * Owns a board: creates its editor from the settings (or shows `editor`) and makes it
@@ -125,6 +142,7 @@ export function BoardProvider({
   children,
   theme,
   readOnly,
+  sync = null,
   onChange,
   onError,
   ...options
@@ -157,12 +175,18 @@ export function BoardProvider({
   useEffect(() => {
     if (resolvedTheme) editor.setTheme(resolvedTheme);
   }, [editor, resolvedTheme]);
+  useEffect(() => sync?.attach(editor), [editor, sync]);
+  const syncReadOnly = useSyncReadOnly(sync);
   // A viewer's board; follows the prop (the user's role can change while they're here).
+  // The sync makes it read-only by itself too (not loaded yet, or a viewer).
   useEffect(() => {
-    if (readOnly !== undefined) editor.setReadOnly(readOnly);
-  }, [editor, readOnly]);
+    if (readOnly !== undefined) editor.setReadOnly(readOnly || syncReadOnly);
+  }, [editor, readOnly, syncReadOnly]);
 
-  const value = useMemo<BoardContextValue>(() => ({ editor, reportError }), [editor, reportError]);
+  const value = useMemo<BoardContextValue>(
+    () => ({ editor, sync, reportError }),
+    [editor, sync, reportError],
+  );
   return <BoardContext.Provider value={value}>{children}</BoardContext.Provider>;
 }
 

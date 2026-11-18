@@ -11,6 +11,7 @@ export * from './text-editor/links';
 export * from './tools/shapes';
 export * from './ui/theme';
 export * from './board-editor/board-editor';
+export * from './board-editor/sync';
 export * from './ui/labels';
 export type { BoardDraft, NormalizedDraft } from './preview/draft-preview';
 export { exportFrame, type ExportFrame, type ExportImageOptions } from './export/export-image';

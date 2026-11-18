@@ -1,5 +1,5 @@
 // Compiled against a copy of the built package, without workspace aliases.
-import { BoardEditor, Scene, rgba, type BoardElement } from 'apeiro';
+import { BoardEditor, Scene, rgba, type BoardElement, type SyncState } from 'apeiro';
 import {
   Board,
   BoardProvider,
@@ -8,19 +8,20 @@ import {
   useBoard,
   useBoardState,
   useHistory,
+  useSyncState,
   type BoardApi,
   type BoardProps,
   type BoardProviderProps,
 } from 'apeiro/react';
 import {
   BOARD_EVENTS,
-  syncBoard,
+  createSync,
   type BoardJoinReply,
   type BoardSocket,
-  type BoardSyncState,
   type BoardUpdateReply,
-} from 'apeiro/yjs';
-import { useCollaboration, useSocketSync } from 'apeiro/yjs/react';
+  type YjsBoardSync,
+} from 'apeiro/sync';
+import type * as Y from 'yjs';
 
 const element: BoardElement = {
   id: 'example',
@@ -46,11 +47,11 @@ const props: BoardProviderProps = {
   },
 };
 
-export function SharedBoard({ socket }: { socket: BoardSocket }) {
+export function SharedBoard({ sync }: { sync: YjsBoardSync }) {
   return (
-    <BoardProvider editor={editor} {...props}>
+    <BoardProvider editor={editor} sync={sync} {...props}>
       <Board style={{ height: 400 }}>
-        <Status socket={socket} />
+        <Status />
       </Board>
     </BoardProvider>
   );
@@ -90,23 +91,34 @@ function Toolbar() {
   );
 }
 
-function Status({ socket }: { socket: BoardSocket }) {
+function Status() {
   const board = useEditor();
   const element = useElement('example');
-  const state: BoardSyncState = useSocketSync(socket, 'example', {
-    user: { name: 'Ann', color: '#e11d48' },
-    events: { join: 'board:sync' },
-  });
-  useCollaboration(null);
+  const state: SyncState | null = useSyncState();
   return (
     <span>
-      {state.status}: {element?.id} ({board.scene.size})
+      {state?.status}: {element?.id} ({board.scene.size})
     </span>
   );
 }
 
+export function openBoard(socket: BoardSocket): YjsBoardSync {
+  return createSync({
+    socket,
+    boardId: 'example',
+    user: { name: 'Ann', color: '#e11d48' },
+    events: { join: 'board:sync' },
+    initialContent: 'discard',
+  });
+}
+
+export function openDoc(doc: Y.Doc): YjsBoardSync {
+  return createSync({ doc, awareness: null, lock: false });
+}
+
 export function connect(socket: BoardSocket) {
-  const sync = syncBoard(editor, socket, 'example', { initialContent: 'discard' });
+  const sync = openBoard(socket);
+  const detach = sync.attach(editor);
   const off = sync.subscribe(() => console.log(sync.getState().status, sync.doc.clientID));
   const replies: [BoardJoinReply, BoardUpdateReply] = [
     { update: new Uint8Array(), role: 'view' },
@@ -115,6 +127,7 @@ export function connect(socket: BoardSocket) {
   console.log(BOARD_EVENTS.join, replies.length);
   return () => {
     off();
+    detach();
     sync.destroy();
   };
 }

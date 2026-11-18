@@ -1,3 +1,4 @@
+import type { BoardRole, SyncStatus } from '@apeiro/editor';
 import {
   Awareness,
   applyAwarenessUpdate,
@@ -5,16 +6,8 @@ import {
   removeAwarenessStates,
 } from 'y-protocols/awareness';
 import * as Y from 'yjs';
-import { BOARD_EVENTS, type BoardEvents, type BoardRole, type BoardSocket } from './protocol';
+import { BOARD_EVENTS, type BoardEvents, type BoardSocket } from './protocol';
 import { isBytes, joinAccepted, replyError, toBytes } from './wire';
-
-/**
- * - `connecting`: (re)joining the board;
- * - `synced`: up to date and live;
- * - `offline`: no connection (editing goes on, changes are sent when it is back);
- * - `denied`: the server refused to let this user in (see `error`); the sync has stopped.
- */
-export type SyncStatus = 'connecting' | 'synced' | 'offline' | 'denied';
 
 export interface SocketSyncOptions {
   /** Local changes made within this many ms go out as one message (default 30). */
@@ -51,8 +44,7 @@ const MAX_RETRY_MS = 15_000;
  * - Cursor-only presence changes are sent volatile; this user's presence is withdrawn on
  *   `destroy`.
  *
- * Usually used through `syncBoard` (or `useSocketSync` in React), which also binds the doc
- * to an editor.
+ * Used through `createSync`, which also binds the doc to an editor.
  */
 export class SocketSync {
   private docValue: Y.Doc;

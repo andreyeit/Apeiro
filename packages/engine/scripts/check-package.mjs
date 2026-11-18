@@ -1,7 +1,7 @@
 // Checks the built package before publishing: every export resolves to a file, nothing
 // refers to the private workspace packages, the React entry is a client module and the
 // main entry loads without a DOM (server rendering). A separate TypeScript consumer checks
-// all four public entries with both bundler and NodeNext module resolution.
+// all three public entries with both bundler and NodeNext module resolution.
 import console from 'node:console';
 import {
   cpSync,
@@ -43,11 +43,26 @@ for (const file of walk(join(root, 'dist'))) {
     problems.push(`${file} imports a private @apeiro/* package`);
 }
 
-for (const entry of ['dist/react.js', 'dist/yjs-react.js']) {
+for (const entry of ['dist/react.js']) {
   if (!readFileSync(join(root, entry), 'utf8').startsWith('"use client"'))
     problems.push(`${entry} does not start with "use client"`);
 }
-for (const entry of ['dist/index.js', 'dist/yjs.js']) {
+// yjs is optional: only `apeiro/sync` may load it, not `apeiro` or `apeiro/react`.
+for (const entry of ['dist/index.js', 'dist/react.js']) {
+  const seen = new Set();
+  const visit = (file) => {
+    if (seen.has(file)) return;
+    seen.add(file);
+    const code = readFileSync(file, 'utf8');
+    if (/from ["'](yjs|y-protocols)[/"']/.test(code))
+      problems.push(`${entry} loads yjs (through ${file})`);
+    for (const [, path] of code.matchAll(/from ["'](\.{1,2}\/[^"']+)["']/g))
+      visit(join(dirname(file), path));
+  };
+  visit(join(root, entry));
+}
+
+for (const entry of ['dist/index.js', 'dist/sync.js']) {
   if (readFileSync(join(root, entry), 'utf8').includes('use client'))
     problems.push(`${entry} must not be a client module`);
 }

@@ -46,13 +46,9 @@
       "types": "./dist/react.d.ts",
       "default": "./dist/react.js"
     },
-    "./yjs": {
-      "types": "./dist/yjs.d.ts",
-      "default": "./dist/yjs.js"
-    },
-    "./yjs/react": {
-      "types": "./dist/yjs-react.d.ts",
-      "default": "./dist/yjs-react.js"
+    "./sync": {
+      "types": "./dist/sync.d.ts",
+      "default": "./dist/sync.js"
     },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"

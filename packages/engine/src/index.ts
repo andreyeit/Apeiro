@@ -4,7 +4,7 @@
  * - `apeiro`: the model (Scene, elements, History, Camera…), the renderer and the
  *   interactive `BoardEditor`, framework-free.
  * - `apeiro/react`: `<Board>` and hooks.
- * - `apeiro/yjs`: real-time collaboration through Yjs.
+ * - `apeiro/sync`: share a board with others (`createSync`, over socket.io or any Yjs provider).
  * - `apeiro/styles.css`: styles of the board and its text editor (import once).
  */
 export * from '@apeiro/core';

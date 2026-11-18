@@ -9,7 +9,6 @@
       "@apeiro/renderer": ["../renderer/src/index.ts"],
       "@apeiro/editor": ["../editor/src/index.ts"],
       "@apeiro/react": ["../react/src/index.ts"],
-      "@apeiro/react/yjs": ["../react/src/yjs.ts"],
       "@apeiro/yjs": ["../yjs/src/index.ts"]
     }
   },

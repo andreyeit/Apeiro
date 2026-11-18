@@ -2,16 +2,15 @@ import { copyFileSync, mkdirSync } from 'node:fs';
 import { defineConfig } from 'tsdown';
 
 /**
- * One package, four entries. The workspace packages (`@apeiro/*`, TypeScript sources) are
- * bundled in; shared code goes into common chunks, so `apeiro`, `apeiro/react`,
- * `apeiro/yjs` and `apeiro/yjs/react` see the same classes. react and yjs stay peer dependencies.
+ * One package, three entries. The workspace packages (`@apeiro/*`, TypeScript sources) are
+ * bundled in; shared code goes into common chunks, so `apeiro`, `apeiro/react` and
+ * `apeiro/sync` see the same classes. react and yjs stay peer dependencies.
  */
 export default defineConfig({
   entry: {
     index: 'src/index.ts',
     react: 'src/react.ts',
-    yjs: 'src/yjs.ts',
-    'yjs-react': 'src/yjs-react.ts',
+    sync: 'src/sync.ts',
   },
   format: 'esm',
   platform: 'browser',
@@ -31,11 +30,8 @@ export default defineConfig({
   },
   outputOptions: {
     chunkFileNames: 'chunks/[name]-[hash].js',
-    // Next.js App Router: the React entries are client modules.
-    banner: (chunk) =>
-      chunk.isEntry && (chunk.name === 'react' || chunk.name === 'yjs-react')
-        ? "'use client';"
-        : '',
+    // Next.js App Router: the React entry is a client module.
+    banner: (chunk) => (chunk.isEntry && chunk.name === 'react' ? "'use client';" : ''),
   },
   hooks: {
     'build:done': () => {

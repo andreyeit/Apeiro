@@ -1,5 +1,6 @@
 // Checking what arrives from the socket (internal).
-import type { BoardRole, Bytes } from './protocol';
+import type { BoardRole } from '@apeiro/editor';
+import type { Bytes } from './protocol';
 
 export const isBytes = (data: unknown): data is Bytes =>
   data instanceof Uint8Array || data instanceof ArrayBuffer;

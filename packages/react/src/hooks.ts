@@ -4,14 +4,16 @@ import type {
   BoardEditor,
   BoardEditorEvent,
   NormalizedDraft,
+  BoardSync,
   BoardThemeName,
   Peer,
+  SyncState,
   Tool,
 } from '@apeiro/editor';
-import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { useChangeListener, type BoardChangeListener } from './changes';
 import { boardApi } from './board-api';
-import { useEditor } from './editor-context';
+import { BoardContext, useEditor } from './editor-context';
 import { idSet, sameDeps, storeOf, touches, type BoardStore, type Dep } from './board-store';
 
 type Subscribe = (onChange: () => void) => () => void;
@@ -488,7 +490,7 @@ export function usePreview(): PreviewState {
   return useMemo(() => ({ draft, show, apply, discard }), [draft, show, apply, discard]);
 }
 
-/** Other participants of a shared board (see `collaborate` in `apeiro/yjs`). */
+/** Other participants of a shared board (see `sync`). */
 export function usePeers(): readonly Peer[] {
   const [editor, store] = useStore();
   return useStoreValue(useWatch(store, 'presence'), () => editor.peers);
@@ -496,7 +498,7 @@ export function usePeers(): readonly Peer[] {
 
 /**
  * Who holds element `id` on a shared board (it can't be selected or edited here meanwhile),
- * or null. See the `lock` option of `collaborate`.
+ * or null. See the `lock` option of `createSync`.
  */
 export function useLockedBy(id: string | null | undefined): Peer | null {
   const [editor, store] = useStore();
@@ -551,4 +553,31 @@ export function useClipboard(): ClipboardState {
     }),
     [api, canCopy, hasCopy, readOnly],
   );
+}
+
+const noSync = () => () => undefined;
+const noState = () => null;
+
+/**
+ * The state of the board's sync (`<Board sync={sync}>`), or of `sync` when given (e.g.
+ * outside the board): for indicators like "offline", "saving…", "view only". Null when the
+ * board isn't shared. Re-renders only when the state changes.
+ *
+ * ```tsx
+ * function SyncStatus() {
+ *   const state = useSyncState();
+ *   if (!state) return null;
+ *   return <span>{state.status === 'offline' ? 'Offline' : state.saving ? 'Saving…' : 'Saved'}</span>;
+ * }
+ * ```
+ */
+export function useSyncState(sync?: BoardSync | null): SyncState | null {
+  const context = useContext(BoardContext);
+  const source = sync ?? context?.sync ?? null;
+  const subscribe = useCallback(
+    (onChange: () => void) => (source ? source.subscribe(onChange) : noSync()),
+    [source],
+  );
+  const getState = useCallback(() => (source ? source.getState() : noState()), [source]);
+  return useSyncExternalStore(subscribe, getState, getState);
 }
