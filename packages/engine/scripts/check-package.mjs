@@ -9,6 +9,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   symlinkSync,
   mkdirSync,
@@ -78,9 +79,15 @@ try {
   cpSync(join(root, 'package.json'), join(installed, 'package.json'));
   cpSync(join(root, 'scripts/consumer.tsx'), join(consumer, 'consumer.tsx'));
   writeFileSync(join(consumer, 'package.json'), JSON.stringify({ type: 'module' }));
-  for (const dependency of ['react', 'yjs', 'y-protocols', '@types', '@mapbox']) {
+  for (const dependency of ['react', 'yjs', 'y-protocols', '@mapbox']) {
     symlinkSync(join(root, 'node_modules', dependency), join(modules, dependency), 'junction');
   }
+  mkdirSync(join(modules, '@types'));
+  symlinkSync(
+    realpathSync(join(root, 'node_modules', '@types', 'react')),
+    join(modules, '@types', 'react'),
+    'junction',
+  );
   for (const [name, module, moduleResolution] of [
     ['bundler', ts.ModuleKind.ESNext, ts.ModuleResolutionKind.Bundler],
     ['NodeNext', ts.ModuleKind.NodeNext, ts.ModuleResolutionKind.NodeNext],
